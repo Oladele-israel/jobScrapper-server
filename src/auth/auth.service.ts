@@ -76,7 +76,46 @@ export class AuthService {
     }
   }
 
-  // helper to sign the jwt
+  async Logout(userId: string) {
+    await this.prisma.users.updateMany({
+      where: {
+        id: userId,
+        hashRt: {
+          not: null,
+        },
+      },
+      data: {
+        hashRt: null,
+      },
+    });
+    return 'logout success';
+  }
+
+  async refresh(rt: string, userId: string) {
+    const user = await this.prisma.users.findUnique({
+      where: {
+        id: userId,
+      },
+    });
+
+    if (!user || !user.hashRt) {
+      throw new ForbiddenException(
+        'Access denied: User not registered or missing refresh token hash',
+      );
+    }
+
+    const rtMatch = await argon2.verify(user.hashRt, rt);
+    if (!rtMatch) {
+      throw new ForbiddenException('Access denied: Invalid refresh token');
+    }
+
+    const tokens = await this.getTokens(user.id, user.email);
+    await this.updateRtHash(user.id, tokens.refreshToken);
+
+    return tokens;
+  }
+
+  // helper to sign the jwt---------------------------------------
   async getTokens(userId: string, email: string) {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(
