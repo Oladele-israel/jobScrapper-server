@@ -10,14 +10,14 @@ import {
 import { AuthService } from './auth.service';
 import { signupDto, loginDto } from './dto';
 import { Tokens } from './types';
-import { AuthGuard } from '@nestjs/passport';
 import { Request } from 'express';
+import { Public } from 'src/common/decorators';
+import { RtGuard } from 'src/common/guards';
 
 interface AuthenticatedUser {
-  id: string;
+  sub: string;
   email: string;
   refreshToken: string;
-  // Add other properties as needed
 }
 
 interface AuthenticatedRequest extends Request {
@@ -28,31 +28,33 @@ interface AuthenticatedRequest extends Request {
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Public()
   @Post('signup')
   @HttpCode(HttpStatus.CREATED)
   async Signup(@Body() data: signupDto): Promise<Tokens> {
     return this.authService.Signup(data);
   }
 
+  @Public()
   @Post('login')
   @HttpCode(HttpStatus.OK)
   async Login(@Body() data: loginDto): Promise<Tokens> {
     return this.authService.Login(data);
   }
 
-  @UseGuards(AuthGuard('jwt'))
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   async Logout(@Req() req: AuthenticatedRequest) {
     const user = req.user;
-    return this.authService.Logout(user.id);
+    return this.authService.Logout(user.sub);
   }
 
-  @UseGuards(AuthGuard('jwt-refresh'))
+  @Public() //remember to out put the @public to bypass the global gaurds
+  @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Req() req: AuthenticatedRequest) {
     const user = req.user;
-    return this.authService.refresh(user.id, user.refreshToken);
+    return this.authService.refresh(user.refreshToken, user.sub);
   }
 }
