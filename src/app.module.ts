@@ -5,7 +5,7 @@ import { JwtModule } from '@nestjs/jwt';
 import { AuthModule } from './auth/auth.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AtGuard } from './common/guards';
-import { JobScrapperModule } from './job-scrapper/job-scrapper.module';
+import { SpaceModule } from './space/space.module';
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { JobScrapperModule } from './job-scrapper/job-scrapper.module';
     }),
     JwtModule,
     AuthModule,
-    JobScrapperModule,
+    SpaceModule,
   ],
   controllers: [],
   providers: [

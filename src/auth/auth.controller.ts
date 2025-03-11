@@ -49,7 +49,7 @@ export class AuthController {
     return this.authService.Logout(user.sub);
   }
 
-  @Public() //remember to out put the @public to bypass the global gaurds
+  @Public()
   @UseGuards(RtGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
